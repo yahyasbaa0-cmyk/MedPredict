@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: medpredict_db
+    environment:
+      POSTGRES_USER: medpredict_user
+      POSTGRES_PASSWORD: password123
+      POSTGRES_DB: medpredict_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init_db.sql:/docker-entrypoint-initdb.d/init_db.sql
+    networks:
+      - medpredict_net
+
+  backend:
+    build: ./backend
+    container_name: medpredict_backend
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8000:8000"
+    environment:
+      - POSTGRES_NAME=medpredict_db
+      - POSTGRES_USER=medpredict_user
+      - POSTGRES_PASSWORD=password123
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
+      - AI_SERVICE_URL=http://ai_service:5000/predict
+    depends_on:
+      - db
+    networks:
+      - medpredict_net
+
+  frontend:
+    build: ./frontend
+    container_name: medpredict_frontend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_BASE_URL=http://localhost:8000/api
+    networks:
+      - medpredict_net
+    # For Vite hot reloading and clearing cache
+    command: npm run dev -- --host 0.0.0.0 --port 5173 --force
+
+  ai_service:
+    build: ./ai_service
+    container_name: medpredict_ai_service
+    command: flask run --host=0.0.0.0 --port=5000
+    volumes:
+      - ./ai_service:/app
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_APP=app.py
+      - FLASK_ENV=development
+    networks:
+      - medpredict_net
+
+networks:
+  medpredict_net:
+    driver: bridge
+
+volumes:
+  postgres_data:

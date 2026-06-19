@@ -1,0 +1,35 @@
+=======================================================
+PROJET MEDPREDICT - GUIDE D'INSTALLATION DEPUIS ZÉRO
+=======================================================
+
+Bonjour ! Ce dossier contient le projet MedPredict complet, y compris la base de données avec tous les médecins, les patients et les rendez-vous existants.
+
+Puisque tout a été programmé avec "Docker", tu n'as PAS besoin d'installer Python, Node.js, Postgres ou d'autres trucs compliqués. Il suffit de suivre ces deux étapes très simples :
+
+--- ÉTAPE 1 : INSTALLATION DES PRÉREQUIS ---
+Tu as besoin d'un seul logiciel sur ton ordinateur : Docker.
+1. Télécharge et installe "Docker Desktop" depuis le site officiel : https://www.docker.com/products/docker-desktop/
+2. Ouvre Docker Desktop et laisse-le tourner en arrière-plan.
+
+--- ÉTAPE 2 : LANCEMENT DU PROJET ---
+1. Ouvre ce dossier `MedPredict` dans ton terminal (ou l'invite de commande Windows / PowerShell).
+2. Tape exactement cette commande :
+
+   docker compose up --build
+
+3. Patiente quelques minutes. Docker va automatiquement télécharger tout ce dont il a besoin, construire le serveur, et restaurer la base de données toute seule !
+
+--- ÉTAPE 3 : UTILISATION ---
+Une fois que le terminal affiche que tout est démarré, tu peux utiliser l'application :
+
+1. LE SITE WEB : Ouvre ton navigateur à l'adresse http://localhost:5173
+2. LE BACKEND (API) : Tourne sur http://localhost:8000
+3. CHATBOT WHATSAPP :
+   - Un script "start_ngrok.bat" est inclus si tu as besoin de l'exposer sur Internet pour le lier à Twilio. Double-clique dessus pour avoir le lien public.
+
+--- IDENTIFIANTS DE CONNEXION ---
+Pour te connecter au site :
+- Email : medecin@medpredict.com / Mot de passe : password123
+- Email : secretaire@medpredict.com / Mot de passe : password123
+
+Bonne présentation !
