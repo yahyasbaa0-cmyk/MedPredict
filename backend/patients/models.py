@@ -52,6 +52,7 @@ class Patient(models.Model):
     is_archived = models.BooleanField(default=False)
     
     created_by = models.ForeignKey('accounts.User', on_delete=models.SET_NULL, null=True, blank=True, related_name='created_patients')
+    user = models.OneToOneField('accounts.User', on_delete=models.SET_NULL, null=True, blank=True, related_name='patient_profile')
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"

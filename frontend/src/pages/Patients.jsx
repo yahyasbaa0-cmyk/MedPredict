@@ -4,6 +4,7 @@ import api from '../services/api';
 import useToastStore from '../store/useToastStore';
 import { Search, Plus, User as UserIcon, X, Edit, Trash2, ShieldAlert } from 'lucide-react';
 import Spinner from '../components/Spinner';
+import useAuthStore from '../store/useAuthStore';
 
 const Patients = () => {
   const [patients, setPatients] = useState([]);
@@ -16,6 +17,7 @@ const Patients = () => {
   const [selectedPatient, setSelectedPatient] = useState(null);
   
   const { addToast } = useToastStore();
+  const { user } = useAuthStore();
 
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 8;
@@ -282,9 +284,11 @@ const Patients = () => {
               </div>
 
               <div className="flex justify-between items-center border-t border-color pt-6">
-                 <button className="btn btn-outline-danger" onClick={() => handleDeletePatient(selectedPatient.id)}>
-                   <Trash2 size={16}/> <span className="hidden sm:inline">Supprimer le dossier</span>
-                 </button>
+                 {user?.role !== 'SECRETARY' && (
+                   <button className="btn btn-outline-danger" onClick={() => handleDeletePatient(selectedPatient.id)}>
+                     <Trash2 size={16}/> <span className="hidden sm:inline">Supprimer le dossier</span>
+                   </button>
+                 )}
                  <div className="flex gap-3">
                    <button className="btn btn-outline" onClick={() => setIsViewModalOpen(false)}>Fermer</button>
                    <button className="btn btn-primary" onClick={() => handleEditClick(selectedPatient)}><Edit size={16}/> Modifier</button>

@@ -7,11 +7,13 @@ from .models import Appointment
 from .serializers import AppointmentSerializer
 from patients.models import Patient
 from accounts.models import User, Notification
+from accounts.permissions import IsAdminOrDoctorOrSecretary
 import datetime
 
 class AppointmentViewSet(viewsets.ModelViewSet):
     queryset = Appointment.objects.all()
     serializer_class = AppointmentSerializer
+    permission_classes = [IsAdminOrDoctorOrSecretary]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['patient__first_name', 'patient__last_name', 'doctor__last_name', 'reason']
     filterset_fields = ['status', 'date', 'doctor']
@@ -84,9 +86,37 @@ def public_book_appointment(request):
             message=f"Nouveau rendez-vous (patient externe) planifié avec {patient.first_name} {patient.last_name} le {date} à {time}."
         )
 
+        # 3. Auto-create patient account if they don't have one
+        account_created = False
+        account_username = None
+        account_password = None
+
+        if not patient.user:
+            # Check if a user with this CIN as username already exists
+            if not User.objects.filter(username=cin).exists():
+                password = f"{cin}2025"
+                user_account = User.objects.create_user(
+                    username=cin,
+                    password=password,
+                    first_name=first_name,
+                    last_name=last_name,
+                    email=data.get('email', ''),
+                    phone=phone,
+                    role='PATIENT'
+                )
+                patient.user = user_account
+                patient.save()
+                account_created = True
+                account_username = cin
+                account_password = password
+
         return Response({
             'message': 'Rendez-vous confirmé avec succès.',
-            'appointment_id': appointment.id
+            'appointment_id': appointment.id,
+            'account_created': account_created,
+            'account_username': account_username,
+            'account_password': account_password,
+            'has_existing_account': patient.user is not None and not account_created,
         }, status=status.HTTP_201_CREATED)
 
     except User.DoesNotExist:
@@ -132,3 +162,22 @@ def get_available_slots(request):
     available_slots = [slot for slot in all_slots if slot not in booked_times]
     
     return Response(available_slots)
+
+@api_view(['GET'])
+def my_appointments(request):
+    """Return all appointments for the authenticated patient."""
+    user = request.user
+    if not user.is_authenticated:
+        return Response({'error': 'Non authentifié.'}, status=status.HTTP_401_UNAUTHORIZED)
+    
+    if user.role != 'PATIENT':
+        return Response({'error': 'Accès réservé aux patients.'}, status=status.HTTP_403_FORBIDDEN)
+    
+    # Find the patient profile linked to this user
+    if not hasattr(user, 'patient_profile') or user.patient_profile is None:
+        return Response({'error': 'Aucun dossier patient lié à ce compte.'}, status=status.HTTP_404_NOT_FOUND)
+    
+    patient = user.patient_profile
+    appointments = Appointment.objects.filter(patient=patient).order_by('-date', '-time')
+    serializer = AppointmentSerializer(appointments, many=True)
+    return Response(serializer.data)

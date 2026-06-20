@@ -3,10 +3,12 @@ from rest_framework import viewsets, filters
 from django_filters.rest_framework import DjangoFilterBackend
 from .models import Patient
 from .serializers import PatientSerializer
+from accounts.permissions import IsAdminOrDoctorOrSecretary
 
 class PatientViewSet(viewsets.ModelViewSet):
     queryset = Patient.objects.all()
     serializer_class = PatientSerializer
+    permission_classes = [IsAdminOrDoctorOrSecretary]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['first_name', 'last_name', 'phone', 'email']
     filterset_fields = ['is_archived']

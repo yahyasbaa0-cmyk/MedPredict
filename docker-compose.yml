@@ -12,7 +12,7 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./init_db.sql:/docker-entrypoint-initdb.d/init_db.sql
+      # - ./init_db.sql:/docker-entrypoint-initdb.d/init_db.sql  # Disabled: file has encoding issues and causes startup failure
     networks:
       - medpredict_net
 
@@ -24,13 +24,14 @@ services:
       - ./backend:/app
     ports:
       - "8000:8000"
+    env_file:
+      - .env
     environment:
       - POSTGRES_NAME=medpredict_db
       - POSTGRES_USER=medpredict_user
       - POSTGRES_PASSWORD=password123
       - POSTGRES_HOST=db
       - POSTGRES_PORT=5432
-      - AI_SERVICE_URL=http://ai_service:5000/predict
     depends_on:
       - db
     networks:
@@ -50,20 +51,6 @@ services:
       - medpredict_net
     # For Vite hot reloading and clearing cache
     command: npm run dev -- --host 0.0.0.0 --port 5173 --force
-
-  ai_service:
-    build: ./ai_service
-    container_name: medpredict_ai_service
-    command: flask run --host=0.0.0.0 --port=5000
-    volumes:
-      - ./ai_service:/app
-    ports:
-      - "5000:5000"
-    environment:
-      - FLASK_APP=app.py
-      - FLASK_ENV=development
-    networks:
-      - medpredict_net
 
 networks:
   medpredict_net:

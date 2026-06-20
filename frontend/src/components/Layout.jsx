@@ -3,6 +3,9 @@ import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import useAuthStore from '../store/useAuthStore';
 import { Home, Users, Calendar, FileText, LogOut, Activity, User, Bell, CheckCircle2 } from 'lucide-react';
 import api from '../services/api';
+import ChatbotButton from './ChatbotButton';
+import ChatbotWindow from './ChatbotWindow';
+import ThemeToggle from './ThemeToggle';
 
 const Sidebar = () => {
   const { user } = useAuthStore();
@@ -162,7 +165,13 @@ const Topbar = () => {
 
         
         {/* Divider */}
-        <div style={{ width: '1px', height: '2rem', background: 'rgba(0,0,0,0.1)', margin: '0 0.25rem' }}></div>
+        <div style={{ width: '1px', height: '2rem', background: 'var(--glass-border)', margin: '0 0.25rem' }}></div>
+        
+        {/* Theme Toggle */}
+        <ThemeToggle />
+        
+        {/* Divider */}
+        <div style={{ width: '1px', height: '2rem', background: 'var(--glass-border)', margin: '0 0.25rem' }}></div>
         
         {/* Logout */}
         <button onClick={handleLogout} className="btn btn-outline-danger" style={{ padding: '0.5rem 1rem' }}>
@@ -189,6 +198,9 @@ const Layout = () => {
           </main>
         </div>
       </div>
+      {/* Chatbot Components */}
+      <ChatbotButton />
+      <ChatbotWindow />
     </div>
   );
 };

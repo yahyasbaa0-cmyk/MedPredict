@@ -14,15 +14,21 @@ class ConsultationAIIntegrationTests(APITestCase):
         )
         self.client.force_authenticate(user=self.user)
         self.url = '/api/consultations/analyze-symptoms/'
+        
+        import os
+        os.environ['GROQ_API_TOKEN'] = 'mock-groq-token'
 
     @patch('consultations.views.requests.post')
     def test_analyze_symptoms_success(self, mock_post):
-        # Setup mock to return a successful response
+        # Setup mock to return a successful response matching Groq format
         mock_post.return_value.status_code = 200
         mock_post.return_value.json.return_value = {
-            "predictions": [
-                {"disease": "Common Cold", "probability": 0.85},
-                {"disease": "Flu", "probability": 0.10}
+            "choices": [
+                {
+                    "message": {
+                        "content": '{"predictions": [{"disease": "Common Cold", "confidence": 85.0}, {"disease": "Flu", "confidence": 10.0}]}'
+                    }
+                }
             ]
         }
         

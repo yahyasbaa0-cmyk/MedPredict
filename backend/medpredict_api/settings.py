@@ -117,9 +117,6 @@ SIMPLE_JWT = {
     'AUTHORIZATION_HEADER_TYPES': ('Bearer',),
 }
 
-AI_SERVICE_URL = os.environ.get('AI_SERVICE_URL', 'http://localhost:5000/predict')
-
-
 # CELERY CONFIGURATION
 CELERY_BROKER_URL = 'redis://redis:6379/0'
 CELERY_ACCEPT_CONTENT = ['json']

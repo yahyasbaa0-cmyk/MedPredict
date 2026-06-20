@@ -13,13 +13,11 @@ Write-Host "Creating admin user (admin / admin@example.com / admin)..."
 # Create admin safely ignoring if it already exists
 docker compose exec backend python manage.py shell -c "from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.filter(username='admin').exists() or User.objects.create_superuser('admin', 'admin@example.com', 'admin')"
 
-Write-Host "Training the AI model..."
-docker compose exec ai_service python model/train.py
+Write-Host "AI training is deprecated. Using Groq API."
 
 Write-Host "Project is running successfully!"
 Write-Host "--------------------------------------------------------"
 Write-Host "Frontend:    http://localhost:5173"
 Write-Host "Backend API: http://localhost:8000/swagger/"
-Write-Host "AI Service:  http://localhost:5000/health"
 Write-Host "--------------------------------------------------------"
 Write-Host "You can log in to the frontend with the username 'admin' and password 'admin'."

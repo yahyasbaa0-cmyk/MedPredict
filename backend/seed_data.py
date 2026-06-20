@@ -33,6 +33,11 @@ def run():
     dr_chaoui.set_password('password123')
     dr_chaoui.save()
 
+    # Create secretary
+    sec_alami, _ = User.objects.get_or_create(username='sec_alami', defaults={'role': 'SECRETARY', 'first_name': 'Nadia', 'last_name': 'Alami', 'email': 'n.alami@medpredict.ma'})
+    sec_alami.set_password('password123')
+    sec_alami.save()
+
     # Create Patients
     patients_data = [
         {'cin': 'BJ123456', 'first_name': 'Lamine', 'last_name': 'Yamal', 'date_of_birth': '2007-07-13', 'gender': 'M', 'blood_group': 'O+', 'email': 'lamine@test.ma', 'phone': '+212600123456', 'city': 'Rabat'},

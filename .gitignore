@@ -9,8 +9,6 @@ db.sqlite3
 __pycache__/
 *.pyc
 
-# Environment variables
-.env
 
 # Logs
 *.log

@@ -22,7 +22,12 @@ const Login = () => {
     
     if (success) {
       addToast('Connexion réussie', 'Bienvenue sur MedPredict', 'success');
-      navigate('/');
+      const loggedInUser = useAuthStore.getState().user;
+      if (loggedInUser?.role === 'PATIENT') {
+        navigate('/my-appointments');
+      } else {
+        navigate('/');
+      }
     } else {
       addToast('Accès refusé', 'Identifiants invalides ou serveur injoignable.', 'error');
     }
@@ -30,8 +35,8 @@ const Login = () => {
 
   return (
     <div 
-      className="relative flex items-center justify-center overflow-hidden w-full"
-      style={{ backgroundColor: '#0f172a', minHeight: '100vh' }}
+      className="relative flex items-center justify-center overflow-hidden w-full transition-colors duration-300"
+      style={{ backgroundColor: 'var(--bg-main)', minHeight: '100vh' }}
     >
       
       {/* Animated Background Blobs */}

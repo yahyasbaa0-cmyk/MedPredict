@@ -30,6 +30,7 @@ const PublicBooking = () => {
     gender: 'O',
     date_of_birth: '2000-01-01'
   });
+  const [bookingResult, setBookingResult] = useState(null);
 
   // Fetch doctors on mount
   useEffect(() => {
@@ -59,12 +60,23 @@ const PublicBooking = () => {
   const submitBooking = async () => {
     setLoading(true);
     try {
-      await axios.post(`${API_URL}/appointments/public/book/`, formData);
+      const response = await axios.post(`${API_URL}/appointments/public/book/`, formData);
+      setBookingResult(response.data);
       setLoading(false);
       handleNext(); // Move to success step
     } catch (error) {
       setLoading(false);
       addToast('Erreur', error.response?.data?.error || 'Une erreur est survenue lors de la réservation.', 'error');
+    }
+  };
+
+  const formatDateFrench = (dateStr) => {
+    if (!dateStr) return '';
+    try {
+      const d = new Date(dateStr + 'T00:00:00');
+      return d.toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    } catch (e) {
+      return dateStr;
     }
   };
 
@@ -314,39 +326,89 @@ const PublicBooking = () => {
                  </div>
                  <h2 className="text-3xl font-bold text-white mb-4">Rendez-vous Confirmé !</h2>
                  <p className="text-slate-300 text-lg max-w-md mx-auto mb-8">
-                    Merci {formData.first_name}. Votre rendez-vous a été enregistré avec succès pour le <strong className="text-white">{formData.date}</strong> à <strong className="text-white">{formData.time}</strong>.
+                    Merci {formData.first_name}. Votre rendez-vous a été enregistré avec succès pour le <strong className="text-white" style={{ textTransform: 'capitalize' }}>{formatDateFrench(formData.date)}</strong> à <strong className="text-white">{formData.time.substring(0, 5)}</strong>.
                  </p>
                  
-                 <div className="bg-slate-800/50 border border-white/10 rounded-2xl p-6 max-w-sm mx-auto text-left mb-8">
-                    <div className="flex items-center gap-3 mb-4">
-                        <Calendar className="text-primary" size={20} />
-                        <div>
-                            <p className="text-xs text-muted font-bold uppercase">Date</p>
-                            <p className="text-white font-medium">{formData.date}</p>
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto mb-8">
+                    {/* Appointment details card */}
+                    <div className="bg-slate-800/30 border border-white/5 rounded-2xl p-6 text-left flex flex-col justify-center">
+                        <div className="flex items-center gap-3 mb-4">
+                            <Calendar className="text-primary" size={20} />
+                            <div>
+                                <p className="text-xs text-slate-400 font-bold uppercase">Date</p>
+                                <p className="text-white font-medium capitalize">{formatDateFrench(formData.date)}</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-3 mb-4">
+                            <Clock className="text-primary" size={20} />
+                            <div>
+                                <p className="text-xs text-slate-400 font-bold uppercase">Heure</p>
+                                <p className="text-white font-medium">{formData.time.substring(0, 5)}</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <MapPin className="text-primary" size={20} />
+                            <div>
+                                <p className="text-xs text-slate-400 font-bold uppercase">Lieu</p>
+                                <p className="text-white font-medium">Clinique MedPredict</p>
+                            </div>
                         </div>
                     </div>
-                    <div className="flex items-center gap-3 mb-4">
-                        <Clock className="text-primary" size={20} />
-                        <div>
-                            <p className="text-xs text-muted font-bold uppercase">Heure</p>
-                            <p className="text-white font-medium">{formData.time}</p>
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                        <MapPin className="text-primary" size={20} />
-                        <div>
-                            <p className="text-xs text-muted font-bold uppercase">Lieu</p>
-                            <p className="text-white font-medium">Clinique MedPredict</p>
-                        </div>
-                    </div>
+
+                    {/* Auto-created account details card */}
+                    {bookingResult?.account_created && (
+                       <div className="bg-slate-800/80 border border-emerald-500/20 rounded-2xl p-6 text-left shadow-[0_0_30px_rgba(16,185,129,0.05)]">
+                          <h4 className="text-emerald-400 font-bold text-base mb-2 flex items-center gap-2">
+                             <CheckCircle size={18} /> Espace Patient Créé !
+                          </h4>
+                          <p className="text-slate-300 text-xs mb-4 leading-relaxed">
+                             Un compte patient a été créé automatiquement pour vous permettre de suivre vos rendez-vous :
+                          </p>
+                          <div className="bg-slate-950/60 rounded-xl p-3.5 border border-white/5 flex flex-col gap-2 font-mono text-xs mb-4">
+                             <div className="flex justify-between">
+                                <span className="text-slate-400">Identifiant (CIN) :</span>
+                                <span className="text-white font-bold">{bookingResult.account_username}</span>
+                             </div>
+                             <div className="flex justify-between">
+                                <span className="text-slate-400">Mot de passe :</span>
+                                <span className="text-white font-bold">{bookingResult.account_password}</span>
+                             </div>
+                          </div>
+                          <p className="text-slate-400 text-[10px] m-0 text-center leading-relaxed">
+                             Conservez précieusement ces identifiants pour vous connecter ultérieurement.
+                          </p>
+                       </div>
+                    )}
+
+                    {/* Existing account card */}
+                    {bookingResult?.has_existing_account && (
+                       <div className="bg-slate-800/80 border border-primary/20 rounded-2xl p-6 text-left shadow-[0_0_30px_rgba(37,99,235,0.05)] flex flex-col justify-center">
+                          <h4 className="text-primary font-bold text-base mb-2 flex items-center gap-2">
+                             <User size={18} /> Compte Existant
+                          </h4>
+                          <p className="text-slate-300 text-sm leading-relaxed m-0">
+                             Vous possédez déjà un compte associé à votre CIN. Connectez-vous avec vos identifiants existants pour suivre ce rendez-vous.
+                          </p>
+                       </div>
+                    )}
                  </div>
 
-                 <button 
-                    onClick={() => navigate('/login')}
-                    className="btn btn-primary px-8 py-3 text-lg font-bold shadow-[0_0_20px_rgba(37,99,235,0.4)]"
-                 >
-                    Retour à l'accueil
-                 </button>
+                 <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                    {(bookingResult?.account_created || bookingResult?.has_existing_account) && (
+                       <button 
+                          onClick={() => navigate('/login')}
+                          className="btn btn-primary px-8 py-3.5 text-base font-bold shadow-[0_0_25px_rgba(37,99,235,0.4)] flex items-center gap-2"
+                       >
+                          <User size={18} /> Suivre mes rendez-vous
+                       </button>
+                    )}
+                    <button 
+                       onClick={() => navigate('/login')}
+                       className={`btn ${ (bookingResult?.account_created || bookingResult?.has_existing_account) ? 'btn-outline-primary' : 'btn-primary' } px-8 py-3.5 text-base font-bold flex items-center gap-2`}
+                    >
+                       Retour à l'accueil
+                    </button>
+                 </div>
               </div>
             )}
 

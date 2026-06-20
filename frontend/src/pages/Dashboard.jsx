@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import useAuthStore from '../store/useAuthStore';
 import api from '../services/api';
 import useToastStore from '../store/useToastStore';
+import { useThemeStore } from '../store/useThemeStore';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title } from 'chart.js';
 import { Doughnut, Bar } from 'react-chartjs-2';
 import Spinner from '../components/Spinner';
@@ -26,6 +27,21 @@ const Dashboard = () => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const { addToast } = useToastStore();
+  const theme = useThemeStore(state => state.theme);
+
+  // Chart colors based on theme
+  const chartColors = {
+    light: ['#2563eb', '#0ea5e9', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'],
+    dark: ['#3b82f6', '#22d3ee', '#34d399', '#fbbf24', '#fb7185', '#a78bfa']
+  };
+  
+  const appointmentColors = {
+    light: ['#2563eb', '#10b981', '#ef4444'],
+    dark: ['#3b82f6', '#34d399', '#fb7185']
+  };
+
+  const getChartColors = () => chartColors[theme] || chartColors.light;
+  const getAppointmentColors = () => appointmentColors[theme] || appointmentColors.light;
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -52,7 +68,7 @@ const Dashboard = () => {
     datasets: [
       {
         data: pathologies_distribution.map(p => p.count),
-        backgroundColor: ['#2563eb', '#0ea5e9', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'],
+        backgroundColor: getChartColors(),
         borderWidth: 0,
         hoverOffset: 8
       },
@@ -69,7 +85,7 @@ const Dashboard = () => {
           appointments_stats.completed,
           appointments_stats.cancelled
         ],
-        backgroundColor: ['#2563eb', '#10b981', '#ef4444'],
+        backgroundColor: getAppointmentColors(),
         borderRadius: 8,
         borderSkipped: false,
       }

@@ -6,11 +6,13 @@ from .serializers import PrescriptionSerializer
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
+from accounts.permissions import IsSecretaryReadOnly
 import io
 
 class PrescriptionViewSet(viewsets.ModelViewSet):
     queryset = Prescription.objects.all()
     serializer_class = PrescriptionSerializer
+    permission_classes = [IsSecretaryReadOnly]
 
     def get_queryset(self):
         qs = Prescription.objects.all().order_by('-created_at')

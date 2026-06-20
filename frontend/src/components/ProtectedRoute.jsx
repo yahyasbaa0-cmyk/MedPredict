@@ -7,14 +7,18 @@ import useAuthStore from '../store/useAuthStore';
 // import Topbar from './Topbar';
 
 export const ProtectedRoute = ({ allowedRoles }) => {
-  const { isAuthenticated, user } = useAuthStore.getState();
+  const isAuthenticated = useAuthStore(state => state.isAuthenticated);
+  const user = useAuthStore(state => state.user);
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 
   if (allowedRoles && !allowedRoles.includes(user?.role)) {
-    return <Navigate to="/unauthorized" replace />;
+    if (user?.role === 'PATIENT') {
+      return <Navigate to="/my-appointments" replace />;
+    }
+    return <Navigate to="/" replace />;
   }
 
   return <Outlet />;

@@ -6,6 +6,7 @@ class User(AbstractUser):
         ('ADMIN', 'Administrateur'),
         ('DOCTOR', 'Médecin'),
         ('SECRETARY', 'Secrétaire'),
+        ('PATIENT', 'Patient'),
     )
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='SECRETARY')
     phone = models.CharField(max_length=20, blank=True, null=True)
