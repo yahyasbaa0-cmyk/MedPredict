@@ -88,7 +88,7 @@ def chatbot_message(request):
         })
         
         payload = {
-            "model": "openai/gpt-oss-120b",
+            "model": "llama3-70b-8192",
             "messages": messages_payload,
             "temperature": 0.7,
         }

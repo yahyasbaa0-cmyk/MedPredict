@@ -1982,3 +1982,24 @@ Used By:
 Important Notes:
 
 - Update when dependencies change.
+
+## Project Documentation & Report Tools
+
+#### `generate_report.py`
+
+Purpose:
+Programmatic PDF compilation script for MedPredict's technical project report.
+
+Responsibilities:
+- Extracts school logos from the template and draws them in the page headers.
+- Implements dynamic page numbering in the page footers.
+- Generates cover page, acknowledgements, abstracts, table of contents, lists of figures and tables, and the chapters covering context, design, realization, and testing.
+
+Dependencies:
+- `reportlab`, PIL (pillow), Python standard libraries.
+
+Used By:
+- Developers compiling the project report document.
+
+Important Notes:
+- Execution: `python3 generate_report.py` or inside the backend container if reportlab isn't installed on the host.
