@@ -21,7 +21,7 @@ api.interceptors.response.use(
   (error) => {
     if (error.response && error.response.status === 401) {
       localStorage.removeItem('medpredict_token');
-      localStorage.removeItem('medpredict_user');
+      localStorage.removeItem('medpredict-auth-storage');
       window.location.href = '/login';
     }
     return Promise.reject(error);

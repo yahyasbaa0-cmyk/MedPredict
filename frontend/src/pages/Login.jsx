@@ -10,8 +10,20 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const login = useAuthStore((state) => state.login);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const user = useAuthStore((state) => state.user);
   const { addToast } = useToastStore();
   const navigate = useNavigate();
+
+  React.useEffect(() => {
+    if (isAuthenticated && user) {
+      if (user.role === 'PATIENT') {
+        navigate('/my-appointments');
+      } else {
+        navigate('/');
+      }
+    }
+  }, [isAuthenticated, user, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -69,7 +81,7 @@ const Login = () => {
               <input 
                 type="text" 
                 className="input" 
-                style={{ paddingLeft: '3rem', paddingTop: '0.8rem', paddingBottom: '0.8rem', backgroundColor: 'rgba(255,255,255,0.6)', borderColor: 'rgba(255,255,255,0.5)', fontWeight: 500 }}
+                style={{ paddingLeft: '3rem', paddingTop: '0.8rem', paddingBottom: '0.8rem', backgroundColor: 'var(--glass-base)', borderColor: 'var(--glass-border)', fontWeight: 500 }}
                 placeholder="Identifiant de connexion"
                 value={username} 
                 onChange={e => setUsername(e.target.value)} 
@@ -86,12 +98,26 @@ const Login = () => {
               <input 
                 type="password" 
                 className="input" 
-                style={{ paddingLeft: '3rem', paddingTop: '0.8rem', paddingBottom: '0.8rem', backgroundColor: 'rgba(255,255,255,0.6)', borderColor: 'rgba(255,255,255,0.5)', fontWeight: 500 }}
+                style={{ paddingLeft: '3rem', paddingTop: '0.8rem', paddingBottom: '0.8rem', backgroundColor: 'var(--glass-base)', borderColor: 'var(--glass-border)', fontWeight: 500 }}
                 placeholder="Mot de passe"
                 value={password} 
                 onChange={e => setPassword(e.target.value)} 
                 required 
               />
+            </div>
+            <div className="flex justify-end mt-1.5">
+              <button
+                type="button"
+                onClick={() => addToast(
+                  'Mot de passe oublié',
+                  'Veuillez contacter le secrétariat de la clinique pour réinitialiser votre mot de passe.',
+                  'info'
+                )}
+                className="text-xs text-primary font-bold hover:underline"
+                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+              >
+                Mot de passe oublié ?
+              </button>
             </div>
           </div>
           

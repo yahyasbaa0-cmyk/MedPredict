@@ -16,11 +16,29 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     
     def get_permissions(self):
-        if self.action in ['create', 'destroy']:
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
             self.permission_classes = [permissions.IsAuthenticated, IsAdmin]
         else:
             self.permission_classes = [permissions.IsAuthenticated]
         return super().get_permissions()
+
+    @action(detail=True, methods=['post'], url_path='reset-password')
+    def reset_password(self, request, pk=None):
+        user = self.get_object()
+        if request.user.role not in ['ADMIN', 'SECRETARY', 'DOCTOR']:
+            return Response({'error': 'Permission non autorisée.'}, status=status.HTTP_403_FORBIDDEN)
+            
+        new_password = request.data.get('password')
+        if not new_password:
+            new_password = f"{user.username}2025"
+            
+        user.set_password(new_password)
+        user.save()
+        return Response({
+            'status': 'success',
+            'message': f"Le mot de passe de l'utilisateur a été réinitialisé avec succès.",
+            'new_password': new_password
+        }, status=status.HTTP_200_OK)
 
 class NotificationViewSet(viewsets.ModelViewSet):
     serializer_class = NotificationSerializer
@@ -58,6 +76,15 @@ def chatbot_message(request):
         # Build prompt with role context
         user_role = getattr(request.user, 'role', 'SECRETARY')
         user_name = f"{request.user.first_name} {request.user.last_name}".strip() or request.user.username
+        language = request.data.get('language', 'fr')
+        
+        lang_names = {
+            'en': 'English',
+            'fr': 'French (Français)',
+            'ar': 'Arabic (العربية)',
+            'darija': 'Moroccan Darija (الدارجة المغربية)'
+        }
+        lang_name = lang_names.get(language, 'French (Français)')
         
         # Format conversation history
         messages_payload = [
@@ -66,6 +93,7 @@ def chatbot_message(request):
                 "content": (
                     "You are MedPredict Assistant, a friendly and professional medical AI assistant at the MedPredict clinic. "
                     f"You are talking to {user_name} who has the role of {user_role} at the clinic. "
+                    f"Please communicate and respond exclusively in {lang_name}. "
                     "Help them with clinic operations, scheduling, administrative questions, or patient support. "
                     "Keep your responses concise, professional, and directly helpful. Do not mention system details, "
                     "tokens, or internal APIs."
@@ -88,7 +116,7 @@ def chatbot_message(request):
         })
         
         payload = {
-            "model": "llama3-70b-8192",
+            "model": "llama-3.3-70b-versatile",
             "messages": messages_payload,
             "temperature": 0.7,
         }

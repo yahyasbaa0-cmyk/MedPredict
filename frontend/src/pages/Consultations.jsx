@@ -220,9 +220,9 @@ const Consultations = () => {
           </div>
 
           {/* Panel IA */}
-          <div className="card shadow-sm border-2 border-dashed border-[#c4b5fd] bg-[#fdfcff] flex flex-col">
-            <div className="flex items-center gap-3 mb-6 border-b border-[#ede9fe] pb-4">
-              <div className="p-2 bg-[#f3e8ff] rounded-lg"><Activity color="#8b5cf6" size={24} /></div>
+          <div className="card shadow-sm border-2 border-dashed flex flex-col" style={{ background: 'var(--glass-base)', borderColor: 'rgba(139, 92, 246, 0.4)' }}>
+            <div className="flex items-center gap-3 mb-6 border-b pb-4" style={{ borderBottomColor: 'rgba(139, 92, 246, 0.15)' }}>
+              <div className="p-2 rounded-lg" style={{ background: 'var(--primary-light)' }}><Activity color="#8b5cf6" size={24} /></div>
               <h2 className="text-xl font-bold m-0" style={{ color: '#8b5cf6' }}>MedAI Assistant</h2>
             </div>
             
@@ -258,7 +258,7 @@ const Consultations = () => {
                       else if (p.confidence >= 50) { confidenceColor = '#f59e0b'; bgHint = 'bg-warning-light'; }
 
                       return (
-                        <div key={idx} className="bg-white p-4 rounded-xl border border-color shadow-sm flex justify-between items-center transition hover:shadow-md">
+                        <div key={idx} className="bg-card p-4 rounded-xl border border-color shadow-sm flex justify-between items-center transition hover:shadow-md">
                           <div className="flex items-center gap-3">
                             <div className={`p-2 rounded-full ${bgHint}`}>
                               {idx === 0 ? <CheckCircle size={20} color={confidenceColor} /> : <Activity size={20} color={confidenceColor} />}
@@ -279,7 +279,7 @@ const Consultations = () => {
               )}
               
               {predictions && predictions.predictions && predictions.predictions.length === 0 && (
-                <div className="m-auto text-center p-8 bg-white rounded-xl border border-color shadow-sm">
+                <div className="m-auto text-center p-8 bg-card rounded-xl border border-color shadow-sm">
                   <p className="text-muted m-0 font-medium">Aucun diagnostic clair identifié pour ces symptômes.</p>
                 </div>
               )}

@@ -7,6 +7,8 @@ import useToastStore from '../store/useToastStore';
 import { Activity, Calendar, Clock, User, LogOut, CheckCircle, AlertCircle, XCircle, Loader2, CalendarPlus } from 'lucide-react';
 import Spinner from '../components/Spinner';
 import ThemeToggle from '../components/ThemeToggle';
+import ChatbotButton from '../components/ChatbotButton';
+import ChatbotWindow from '../components/ChatbotWindow';
 
 const PatientPortal = () => {
   const { user } = useAuthStore();
@@ -16,20 +18,35 @@ const PatientPortal = () => {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const fetchAppointments = async () => {
+    try {
+      const res = await api.get('/appointments/my/');
+      setAppointments(res.data);
+    } catch (err) {
+      console.error(err);
+      addToast('Erreur', 'Impossible de charger vos rendez-vous.', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchAppointments = async () => {
-      try {
-        const res = await api.get('/appointments/my/');
-        setAppointments(res.data);
-      } catch (err) {
-        console.error(err);
-        addToast('Erreur', 'Impossible de charger vos rendez-vous.', 'error');
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchAppointments();
   }, []);
+
+  const handleCancel = async (apptId) => {
+    if (window.confirm("Êtes-vous sûr de vouloir annuler ce rendez-vous ?")) {
+      try {
+        await api.post(`/appointments/my/${apptId}/cancel/`);
+        addToast('Succès', 'Votre rendez-vous a été annulé avec succès.', 'success');
+        fetchAppointments();
+      } catch (err) {
+        console.error(err);
+        const detail = err.response?.data?.error || "Impossible d'annuler le rendez-vous.";
+        addToast('Erreur', detail, 'error');
+      }
+    }
+  };
 
   const handleLogout = () => {
     logout();
@@ -201,11 +218,20 @@ const PatientPortal = () => {
                               </span>
                             </div>
                           </div>
-                          <div className="text-right">
-                            <p className="text-xs text-muted m-0 font-medium" style={{ textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                              Motif
-                            </p>
-                            <p className="text-sm text-main m-0 mt-1 font-medium">{a.reason}</p>
+                          <div className="text-right flex flex-col items-end justify-between self-stretch">
+                            <div>
+                              <p className="text-xs text-muted m-0 font-medium" style={{ textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                Motif
+                              </p>
+                              <p className="text-sm text-main m-0 mt-1 font-medium">{a.reason}</p>
+                            </div>
+                            <button
+                              onClick={() => handleCancel(a.id)}
+                              className="btn btn-outline-danger"
+                              style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem', marginTop: '1rem' }}
+                            >
+                              Annuler le RDV
+                            </button>
                           </div>
                         </div>
                       </div>
@@ -261,6 +287,9 @@ const PatientPortal = () => {
           </>
         )}
       </main>
+      {/* Chatbot Components */}
+      <ChatbotButton />
+      <ChatbotWindow />
     </div>
   );
 };

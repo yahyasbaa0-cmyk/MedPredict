@@ -86,6 +86,17 @@ def public_book_appointment(request):
             message=f"Nouveau rendez-vous (patient externe) planifié avec {patient.first_name} {patient.last_name} le {date} à {time}."
         )
 
+        # Trigger proactive WhatsApp greeting & confirmation message
+        from .whatsapp_views import send_outbound_whatsapp
+        welcome_msg = (
+            f"Bonjour {patient.first_name}! 🏥 Bienvenue chez MedPredict.\n"
+            f"Votre rendez-vous avec le Dr. {doctor.last_name} est enregistré pour le "
+            f"{date} à {time[:5] if time else ''}.\n\n"
+            "Je suis votre assistant virtuel sur ce numéro. N'hésitez pas à m'écrire pour suivre vos rendez-vous, "
+            "voir la liste des médecins ou poser vos questions!"
+        )
+        send_outbound_whatsapp(phone, welcome_msg)
+
         # 3. Auto-create patient account if they don't have one
         account_created = False
         account_username = None
@@ -181,3 +192,34 @@ def my_appointments(request):
     appointments = Appointment.objects.filter(patient=patient).order_by('-date', '-time')
     serializer = AppointmentSerializer(appointments, many=True)
     return Response(serializer.data)
+
+@api_view(['POST'])
+def cancel_my_appointment(request, pk):
+    user = request.user
+    if not user.is_authenticated:
+        return Response({'error': 'Non authentifié.'}, status=status.HTTP_401_UNAUTHORIZED)
+    if user.role != 'PATIENT':
+        return Response({'error': 'Accès réservé aux patients.'}, status=status.HTTP_403_FORBIDDEN)
+        
+    if not hasattr(user, 'patient_profile') or user.patient_profile is None:
+        return Response({'error': 'Aucun dossier patient lié à ce compte.'}, status=status.HTTP_404_NOT_FOUND)
+        
+    try:
+        patient = user.patient_profile
+        appointment = Appointment.objects.get(id=pk, patient=patient)
+        
+        if appointment.status in ['COMPLETED', 'CANCELLED']:
+            return Response({'error': 'Ce rendez-vous ne peut plus être annulé.'}, status=status.HTTP_400_BAD_REQUEST)
+            
+        appointment.status = 'CANCELLED'
+        appointment.save()
+        
+        # Notify doctor
+        Notification.objects.create(
+            recipient=appointment.doctor,
+            message=f"Le patient {patient.first_name} {patient.last_name} a annulé son rendez-vous du {appointment.date} à {appointment.time}."
+        )
+        
+        return Response({'message': 'Rendez-vous annulé avec succès.'}, status=status.HTTP_200_OK)
+    except Appointment.DoesNotExist:
+        return Response({'error': 'Rendez-vous introuvable.'}, status=status.HTTP_404_NOT_FOUND)

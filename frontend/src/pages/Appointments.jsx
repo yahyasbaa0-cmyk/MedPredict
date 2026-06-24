@@ -133,9 +133,9 @@ const Appointments = () => {
     switch(status) {
       case 'PLANNED': return <span className="badge badge-warning">Planifié</span>;
       case 'CONFIRMED': return <span className="badge badge-primary">Confirmé</span>;
-      case 'IN_PROGRESS': return <span className="badge bg-yellow-100 text-yellow-800">En cours</span>;
+      case 'IN_PROGRESS': return <span className="badge" style={{ background: 'var(--secondary-light)', color: 'var(--secondary)', borderColor: 'rgba(6, 182, 212, 0.2)' }}>En cours</span>;
       case 'COMPLETED': return <span className="badge badge-success">Terminé</span>;
-      case 'CANCELLED': return <span className="badge bg-slate-200 text-slate-600">Annulé</span>;
+      case 'CANCELLED': return <span className="badge" style={{ background: 'rgba(148, 163, 184, 0.15)', color: 'var(--text-light)', border: '1px solid rgba(148, 163, 184, 0.2)' }}>Annulé</span>;
       default: return <span className="badge">{status}</span>;
     }
   };

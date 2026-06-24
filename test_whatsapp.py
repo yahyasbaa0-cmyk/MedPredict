@@ -9,16 +9,17 @@ def send_message(body, phone="whatsapp:+212600000000"):
         "From": phone
     }
     response = requests.post(URL, data=data)
-    print(f"\n--- Sent: {body} ---")
+    print(f"\n======================================")
+    print(f"💬 Sent: '{body}'")
+    print(f"======================================")
     print(response.text)
     return response
 
-# Test flow
+# Test new flow with the 5 quick actions
 send_message("bonjour")
-send_message("oui")
-send_message("CD12345") # CIN
-send_message("Mohammed") # First name
-send_message("Alami") # Last name
-send_message("1") # Choix docteur
-send_message("25/12/2026") # Date
-send_message("10:00") # Heure
+send_message("1")  # Prendre un rendez-vous (Book)
+send_message("2")  # Suivre mes rendez-vous (Track)
+send_message("3")  # Créneaux disponibles (Slots)
+send_message("4")  # Médecins disponibles (Doctors)
+send_message("5")  # Gérer mes rendez-vous (Manage)
+send_message("invalid_option")  # Test fallback fallback text

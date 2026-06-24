@@ -17,8 +17,27 @@ class PatientViewSet(viewsets.ModelViewSet):
         qs = Patient.objects.all().order_by('-created_at')
         user = self.request.user
         if user.is_authenticated and user.role == 'DOCTOR':
-            return qs.filter(models.Q(appointments__doctor=user) | models.Q(created_by=user)).distinct()
+            return qs.filter(
+                models.Q(appointments__doctor=user, appointments__status__in=['CONFIRMED', 'COMPLETED', 'IN_PROGRESS']) |
+                models.Q(created_by=user)
+            ).distinct()
         return qs
 
     def perform_create(self, serializer):
-        serializer.save(created_by=self.request.user)
+        patient = serializer.save(created_by=self.request.user)
+        if not patient.user:
+            from accounts.models import User
+            username = patient.cin or f"pat_{patient.id}"
+            if not User.objects.filter(username=username).exists():
+                password = f"{username}2025"
+                user_account = User.objects.create_user(
+                    username=username,
+                    password=password,
+                    first_name=patient.first_name,
+                    last_name=patient.last_name,
+                    email=patient.email or '',
+                    phone=patient.phone or '',
+                    role='PATIENT'
+                )
+                patient.user = user_account
+                patient.save()

@@ -54,6 +54,14 @@ class Appointment(models.Model):
             if daily_appointments.count() >= 8:
                 raise ValidationError("La journée est déjà complète pour ce médecin.")
                 
+            # Block new appointments if there is any unconfirmed/pending one (e.g. status='PLANNED')
+            if not self.pk and self.patient:
+                unconfirmed_exists = Appointment.objects.filter(
+                    patient=self.patient
+                ).exclude(status__in=['CONFIRMED', 'COMPLETED', 'CANCELLED', 'IN_PROGRESS']).exists()
+                if unconfirmed_exists:
+                    raise ValidationError("Vous ne pouvez pas planifier un autre rendez-vous tant que votre premier rendez-vous n'est pas confirmé.")
+                
     def save(self, *args, **kwargs):
         self.clean()
         super().save(*args, **kwargs)

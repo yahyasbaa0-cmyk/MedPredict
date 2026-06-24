@@ -330,7 +330,7 @@ const Prescriptions = () => {
                 <textarea className="input" rows="2" value={formData.recommendations} onChange={e => setFormData({...formData, recommendations: e.target.value})} placeholder="Repos strict, éviter le soleil..."></textarea>
               </div>
 
-              <div className="flex justify-end gap-3 pt-4 border-t border-color mt-2 sticky bottom-0 z-10 bg-white" style={{ background: 'rgba(255, 255, 255, 0.85)', backdropFilter: 'blur(12px)', margin: '0 -1.5rem -1.5rem -1.5rem', padding: '1rem 1.5rem' }}>
+              <div className="flex justify-end gap-3 pt-4 border-t border-color mt-2 sticky bottom-0 z-10 bg-card" style={{ background: 'var(--glass-base)', backdropFilter: 'blur(12px)', margin: '0 -1.5rem -1.5rem -1.5rem', padding: '1rem 1.5rem' }}>
                 <button type="button" className="btn btn-outline" onClick={() => setIsModalOpen(false)}>Annuler</button>
                 <button type="submit" className="btn btn-primary bg-secondary hover:bg-secondary-hover border-transparent px-8">
                   {isEditMode ? 'Enregistrer' : 'Générer Ordonnance'}

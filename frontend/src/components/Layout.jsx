@@ -1,10 +1,8 @@
 import React from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import useAuthStore from '../store/useAuthStore';
-import { Home, Users, Calendar, FileText, LogOut, Activity, User, Bell, CheckCircle2 } from 'lucide-react';
+import { Home, Users, Calendar, FileText, LogOut, Activity, User, Bell, CheckCircle2, Shield } from 'lucide-react';
 import api from '../services/api';
-import ChatbotButton from './ChatbotButton';
-import ChatbotWindow from './ChatbotWindow';
 import ThemeToggle from './ThemeToggle';
 
 const Sidebar = () => {
@@ -16,6 +14,7 @@ const Sidebar = () => {
     { to: '/appointments', label: 'Agenda', icon: Calendar, roles: ['ADMIN', 'DOCTOR', 'SECRETARY'] },
     { to: '/consultations', label: 'Consultations', icon: Activity, roles: ['DOCTOR', 'ADMIN'] },
     { to: '/prescriptions', label: 'Ordonnances', icon: FileText, roles: ['DOCTOR', 'SECRETARY', 'ADMIN'] },
+    { to: '/admin-panel', label: 'Administration', icon: Shield, roles: ['ADMIN'] },
   ];
 
   return (
@@ -38,9 +37,9 @@ const Sidebar = () => {
                 className={({isActive}) => `flex items-center px-4 py-3 rounded-lg font-semibold hover-scale ${isActive ? 'text-primary' : 'text-muted'}`}
                 style={({isActive}) => ({
                   gap: '0.85rem',
-                  background: isActive ? 'white' : 'transparent',
+                  background: isActive ? 'var(--bg-hover)' : 'transparent',
                   boxShadow: isActive ? 'var(--shadow-sm)' : 'none',
-                  border: isActive ? '1px solid rgba(0,0,0,0.05)' : '1px solid transparent'
+                  border: isActive ? '1px solid var(--glass-border)' : '1px solid transparent'
                 })}
               >
                 <item.icon size={20} strokeWidth={2.5} />
@@ -51,9 +50,8 @@ const Sidebar = () => {
         </ul>
       </nav>
       
-      {/* User Profile */}
-      <div className="p-6" style={{ borderTop: '1px solid var(--glass-border)', background: 'rgba(255,255,255,0.4)' }}>
-        <div className="flex items-center p-3 rounded-lg hover-scale cursor-pointer" style={{ gap: '0.75rem', background: 'rgba(255,255,255,0.6)', border: '1px solid white', boxShadow: 'var(--shadow-sm)' }}>
+      <div className="p-6" style={{ borderTop: '1px solid var(--glass-border)', background: 'var(--primary-light)' }}>
+        <div className="flex items-center p-3 rounded-lg hover-scale cursor-pointer" style={{ gap: '0.75rem', background: 'var(--glass-base)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
           <div className="p-2 rounded-md" style={{ background: 'linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%)', boxShadow: 'var(--shadow-sm)' }}>
             <User color="white" size={18} strokeWidth={2.5} />
           </div>
@@ -112,6 +110,7 @@ const Topbar = () => {
     if(path.startsWith('/appointments')) return 'Agenda & Rendez-vous';
     if(path.startsWith('/consultations')) return 'Intelligence Artificielle';
     if(path.startsWith('/prescriptions')) return 'Ordonnances Médicales';
+    if(path.startsWith('/admin-panel')) return 'Administration';
     return 'Système';
   };
 
@@ -129,7 +128,7 @@ const Topbar = () => {
           <button 
             onClick={() => setShowNotifications(!showNotifications)}
             className="btn-icon hover-scale relative" 
-            style={{ background: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.8)', boxShadow: 'var(--shadow-sm)', color: 'var(--text-muted)' }}
+            style={{ background: 'var(--glass-base)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)', color: 'var(--text-muted)' }}
           >
             {unreadCount > 0 && (
               <span className="absolute animate-pulse" style={{ width: '8px', height: '8px', background: 'var(--danger)', borderRadius: '50%', top: '6px', right: '6px' }}></span>
@@ -138,23 +137,23 @@ const Topbar = () => {
           </button>
           
           {showNotifications && (
-            <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden" style={{ zIndex: 100, backdropFilter: 'blur(20px)', background: 'rgba(255,255,255,0.95)' }}>
-              <div className="flex justify-between items-center p-4 border-b border-gray-100 bg-gray-50/50">
-                <h3 className="font-bold text-gray-800 m-0">Notifications</h3>
+            <div className="absolute right-0 mt-2 w-80 rounded-xl shadow-lg border overflow-hidden" style={{ zIndex: 100, backdropFilter: 'blur(20px)', background: 'var(--bg-card)', borderColor: 'var(--glass-border)' }}>
+              <div className="flex justify-between items-center p-4 border-b" style={{ borderColor: 'var(--glass-border)', background: 'var(--bg-hover)' }}>
+                <h3 className="font-bold text-main m-0">Notifications</h3>
                 {unreadCount > 0 && (
-                  <button onClick={handleMarkAllRead} className="text-xs text-primary font-medium flex items-center gap-1 hover:text-blue-700">
+                  <button onClick={handleMarkAllRead} className="text-xs text-primary font-medium flex items-center gap-1 hover:opacity-80">
                     <CheckCircle2 size={14} /> Tout marquer lu
                   </button>
                 )}
               </div>
               <div className="max-h-80 overflow-y-auto">
                 {notifications.length === 0 ? (
-                  <p className="text-sm text-gray-500 p-4 text-center m-0">Aucune notification.</p>
+                  <p className="text-sm text-muted p-4 text-center m-0">Aucune notification.</p>
                 ) : (
                   notifications.map(n => (
-                    <div key={n.id} className={`p-4 border-b border-gray-50 ${!n.is_read ? 'bg-blue-50/30' : ''}`}>
-                      <p className={`text-sm m-0 ${!n.is_read ? 'font-bold text-gray-800' : 'text-gray-600'}`}>{n.message}</p>
-                      <p className="text-xs text-gray-400 mt-1 m-0">{new Date(n.created_at).toLocaleString()}</p>
+                    <div key={n.id} className={`p-4 border-b ${!n.is_read ? 'bg-primary-light' : ''}`} style={{ borderColor: 'var(--glass-border)' }}>
+                      <p className={`text-sm m-0 ${!n.is_read ? 'font-bold text-main' : 'text-muted'}`}>{n.message}</p>
+                      <p className="text-xs text-light mt-1 m-0">{new Date(n.created_at).toLocaleString()}</p>
                     </div>
                   ))
                 )}
@@ -198,9 +197,6 @@ const Layout = () => {
           </main>
         </div>
       </div>
-      {/* Chatbot Components */}
-      <ChatbotButton />
-      <ChatbotWindow />
     </div>
   );
 };

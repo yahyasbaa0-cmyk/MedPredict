@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Calendar, Clock, User, CheckCircle, ChevronRight, ChevronLeft, ArrowLeft, HeartPulse, MapPin } from 'lucide-react';
 import useToastStore from '../store/useToastStore';
+import useAuthStore from '../store/useAuthStore';
 import axios from 'axios';
 import Spinner from '../components/Spinner';
 
@@ -12,6 +13,7 @@ const API_URL = 'http://localhost:8000/api';
 const PublicBooking = () => {
   const navigate = useNavigate();
   const { addToast } = useToastStore();
+  const { isAuthenticated, user } = useAuthStore();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [doctors, setDoctors] = useState([]);
@@ -130,7 +132,15 @@ const PublicBooking = () => {
 
       {/* Back Button */}
       <button 
-        onClick={() => navigate('/login')}
+        onClick={() => {
+          if (isAuthenticated && user?.role === 'PATIENT') {
+            navigate('/my-appointments');
+          } else if (isAuthenticated) {
+            navigate('/');
+          } else {
+            navigate('/login');
+          }
+        }}
         className="absolute top-6 left-6 z-20 flex items-center gap-2 text-white/70 hover:text-white transition-colors glass-panel-dark px-4 py-2 hover:bg-white/5"
         style={{ borderRadius: '2rem' }}
       >
@@ -394,20 +404,34 @@ const PublicBooking = () => {
                  </div>
 
                  <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                    {(bookingResult?.account_created || bookingResult?.has_existing_account) && (
-                       <button 
-                          onClick={() => navigate('/login')}
-                          className="btn btn-primary px-8 py-3.5 text-base font-bold shadow-[0_0_25px_rgba(37,99,235,0.4)] flex items-center gap-2"
-                       >
-                          <User size={18} /> Suivre mes rendez-vous
-                       </button>
-                    )}
-                    <button 
-                       onClick={() => navigate('/login')}
-                       className={`btn ${ (bookingResult?.account_created || bookingResult?.has_existing_account) ? 'btn-outline-primary' : 'btn-primary' } px-8 py-3.5 text-base font-bold flex items-center gap-2`}
-                    >
-                       Retour à l'accueil
-                    </button>
+                     {(bookingResult?.account_created || bookingResult?.has_existing_account) && (
+                        <button 
+                           onClick={() => {
+                             if (isAuthenticated && user?.role === 'PATIENT') {
+                               navigate('/my-appointments');
+                             } else {
+                               navigate('/login');
+                             }
+                           }}
+                           className="btn btn-primary px-8 py-3.5 text-base font-bold shadow-[0_0_25px_rgba(37,99,235,0.4)] flex items-center gap-2"
+                        >
+                           <User size={18} /> Suivre mes rendez-vous
+                        </button>
+                     )}
+                     <button 
+                        onClick={() => {
+                          if (isAuthenticated && user?.role === 'PATIENT') {
+                            navigate('/my-appointments');
+                          } else if (isAuthenticated) {
+                            navigate('/');
+                          } else {
+                            navigate('/login');
+                          }
+                        }}
+                        className={`btn ${ (bookingResult?.account_created || bookingResult?.has_existing_account) ? 'btn-outline-primary' : 'btn-primary' } px-8 py-3.5 text-base font-bold flex items-center gap-2`}
+                     >
+                        Retour à l'accueil
+                     </button>
                  </div>
               </div>
             )}

@@ -12,6 +12,7 @@ import Prescriptions from './pages/Prescriptions';
 import ToastProvider from './components/ToastProvider';
 import PublicBooking from './pages/PublicBooking';
 import PatientPortal from './pages/PatientPortal';
+import AdminPanel from './pages/AdminPanel';
 import { useThemeStore } from './store/useThemeStore';
 
 function App() {
@@ -45,6 +46,11 @@ function App() {
               {/* Doctor, Secretary, and Admin */}
               <Route element={<ProtectedRoute allowedRoles={['DOCTOR', 'SECRETARY', 'ADMIN']} />}>
                  <Route path="/prescriptions" element={<Prescriptions />} />
+              </Route>
+
+              {/* Admin only */}
+              <Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
+                 <Route path="/admin-panel" element={<AdminPanel />} />
               </Route>
             </Route>
           </Route>

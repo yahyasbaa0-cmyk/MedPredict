@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import api from '../services/api';
 import useToastStore from '../store/useToastStore';
-import { Search, Plus, User as UserIcon, X, Edit, Trash2, ShieldAlert } from 'lucide-react';
+import { Search, Plus, User as UserIcon, X, Edit, Trash2, ShieldAlert, Key } from 'lucide-react';
 import Spinner from '../components/Spinner';
 import useAuthStore from '../store/useAuthStore';
 
@@ -114,6 +114,19 @@ const Patients = () => {
       } catch (err) {
         console.error(err);
         addToast('Erreur', 'Impossible de supprimer le dossier.', 'error');
+      }
+    }
+  };
+
+  const handleResetPassword = async (userId, cin) => {
+    const defaultPassword = cin ? `${cin}2025` : 'Mot de passe par défaut';
+    if(window.confirm(`Êtes-vous sûr de vouloir réinitialiser le mot de passe de ce patient ?\nLe nouveau mot de passe sera : ${defaultPassword}`)) {
+      try {
+        await api.post(`/auth/users/${userId}/reset-password/`);
+        addToast('Succès', 'Mot de passe réinitialisé avec succès.', 'success');
+      } catch (err) {
+        console.error(err);
+        addToast('Erreur', 'Impossible de réinitialiser le mot de passe.', 'error');
       }
     }
   };
@@ -269,14 +282,14 @@ const Patients = () => {
                    
                    <div className="mb-3">
                      <strong className="block text-xs uppercase text-danger opacity-80 mb-1">Allergies déclarées</strong>
-                     <p className="text-sm bg-white p-2 rounded border border-[#ffe4e6] text-[#881337] m-0">
+                     <p className="text-sm p-2 rounded border m-0" style={{ background: 'var(--danger-light)', borderColor: 'rgba(244, 63, 94, 0.2)', color: 'var(--danger-hover)' }}>
                        {selectedPatient.allergies || 'Aucune allergie connue'}
                      </p>
                    </div>
                    
                    <div>
                      <strong className="block text-xs uppercase text-danger opacity-80 mb-1">Antécédents médicaux</strong>
-                     <p className="text-sm bg-white p-2 rounded border border-[#ffe4e6] text-[#881337] m-0">
+                     <p className="text-sm p-2 rounded border m-0" style={{ background: 'var(--danger-light)', borderColor: 'rgba(244, 63, 94, 0.2)', color: 'var(--danger-hover)' }}>
                        {selectedPatient.medical_history || 'Aucun antécédent particulier'}
                      </p>
                    </div>
@@ -284,11 +297,18 @@ const Patients = () => {
               </div>
 
               <div className="flex justify-between items-center border-t border-color pt-6">
-                 {user?.role !== 'SECRETARY' && (
-                   <button className="btn btn-outline-danger" onClick={() => handleDeletePatient(selectedPatient.id)}>
-                     <Trash2 size={16}/> <span className="hidden sm:inline">Supprimer le dossier</span>
-                   </button>
-                 )}
+                 <div className="flex gap-2">
+                   {user?.role !== 'SECRETARY' && (
+                     <button className="btn btn-outline-danger" onClick={() => handleDeletePatient(selectedPatient.id)}>
+                       <Trash2 size={16}/> <span className="hidden sm:inline">Supprimer le dossier</span>
+                     </button>
+                   )}
+                   {selectedPatient.user && (
+                     <button className="btn btn-outline-warning flex items-center gap-1.5" onClick={() => handleResetPassword(selectedPatient.user, selectedPatient.cin)}>
+                        <Key size={16} /> <span className="hidden sm:inline">Réinitialiser MDP</span>
+                     </button>
+                   )}
+                 </div>
                  <div className="flex gap-3">
                    <button className="btn btn-outline" onClick={() => setIsViewModalOpen(false)}>Fermer</button>
                    <button className="btn btn-primary" onClick={() => handleEditClick(selectedPatient)}><Edit size={16}/> Modifier</button>
@@ -403,7 +423,7 @@ const Patients = () => {
                 </div>
               </div>
 
-              <div className="flex justify-end gap-3 pt-4 pb-4 px-6 border-t border-color sticky bottom-0 z-10" style={{ background: 'rgba(255, 255, 255, 0.85)', backdropFilter: 'blur(12px)', margin: '0 -1.5rem -1.5rem -1.5rem' }}>
+              <div className="flex justify-end gap-3 pt-4 pb-4 px-6 border-t border-color sticky bottom-0 z-10" style={{ background: 'var(--glass-base)', backdropFilter: 'blur(12px)', margin: '0 -1.5rem -1.5rem -1.5rem' }}>
                 <button type="button" className="btn btn-outline" onClick={() => setIsModalOpen(false)}>Annuler</button>
                 <button type="submit" className="btn btn-primary px-8">{isEditMode ? 'Enregistrer les modifications' : 'Créer le dossier'}</button>
               </div>
